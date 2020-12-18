@@ -34,7 +34,7 @@
       $this->setData($this->options["data"]);
       
       if($this->options["header"] === true){
-        $this->tpl->draw("header");
+        $this->tpl->draw("header", false);
       }
       
 
@@ -44,7 +44,7 @@
     private function setData($data = []){
 
       foreach($data as $key => $value){
-        $this->$tpl->assign($key, $value);
+        $this->tpl->assign($key, $value);
       }
 
     }

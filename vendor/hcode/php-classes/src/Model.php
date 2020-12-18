@@ -6,6 +6,7 @@ class Model {
 
   private $values = [];
 
+  // cria os getter e setters dinamicamente
   public function __call($name, $arguments) {
 
     $method = substr($name, 0, 3);
@@ -14,7 +15,9 @@ class Model {
     switch ($method){
 
       case 'get':
-        return $this->values[$fieldName];
+        return (isset($this->values[$fieldName])) ? 
+          $this->values[$fieldName] :
+          NULL;
         break;
 
       case 'set':
@@ -25,6 +28,7 @@ class Model {
 
   }
 
+  // preenche os dados do objeto
   public function setData($data = []){
 
     foreach ($data as $key => $value){
@@ -35,6 +39,7 @@ class Model {
 
   }
 
+  // retorna os dados do objeto
   public function getValues() {
 
     return $this->values;

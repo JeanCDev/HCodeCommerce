@@ -8,15 +8,18 @@ session_start();
 //session_destroy();
 require_once("vendor/autoload.php");
 
+// usa as bibliotecas importadas
 use \Slim\Slim;
 use \Hcode\Page;
 use \Hcode\PageAdmin;
 use \Hcode\Model\User;
+use \Hcode\Model\Category;
 
+// configura o Slim framework
 $app = new Slim();
-
 $app->config('debug', true);
 
+// Rota para a Home
 $app->get('/', function() {
 
 	$page = new Page();
@@ -25,6 +28,22 @@ $app->get('/', function() {
 
 });
 
+$app->get('/categories/:idcategory',function($idcategory){
+
+	$category = new Category();
+
+	$category->get((int)$idcategory);
+
+	$page = new Page();
+
+	$page->setTpl('category',[
+		"category"=>$category->getValues(),
+		"products"=>[]
+	]);
+
+});
+
+// rota para a Home do admin
 $app->get('/admin', function() {
 
 	User::verifyLogin();
@@ -35,6 +54,7 @@ $app->get('/admin', function() {
 
 });
 
+// rota para a página de login no painel do admin
 $app->get('/admin/login', function() {
 
 	$page = new PageAdmin([
@@ -46,6 +66,7 @@ $app->get('/admin/login', function() {
 
 });
 
+// efetivamente fazer o login
 $app->post('/admin/login', function() {
 
 	User::login($_POST['login'], $_POST['password']);
@@ -55,6 +76,7 @@ $app->post('/admin/login', function() {
 
 });
 
+// sair do painel de admin
 $app->get('/admin/logout', function(){
 
 	User::logout();
@@ -64,6 +86,278 @@ $app->get('/admin/logout', function(){
 
 });
 
+// excluir um usuário
+$app->get('/admin/users/:iduser/delete', function($iduser){
+
+	User::verifyLogin();
+
+	$user = new User();
+
+	$user->get((int)$iduser);
+
+	$user->delete();
+
+	header("Location: /admin/users");
+	exit;
+
+});
+
+// lista de usuários
+$app->get('/admin/users', function(){
+
+	User::verifyLogin();
+
+	$users = User::listAll();
+
+	$page = new PageAdmin();
+
+	$page->setTpl('users', array(
+		"users" => $users,
+	));
+
+});
+
+// página para criar um novo usuário
+$app->get('/admin/users/create', function(){
+
+	User::verifyLogin();
+
+	$page = new PageAdmin();
+
+	$page->setTpl('users-create');
+
+});
+
+// página de edição de um usuário
+$app->get('/admin/users/:iduser', function($iduser){
+
+	User::verifyLogin();
+
+	$user = new User();
+
+	$user->get((int)$iduser);
+
+	$page = new PageAdmin();
+
+	$page->setTpl('users-update', [
+		"user"=>$user->getValues()
+	]);
+
+});
+
+// criar um novo usuário no banco de dados
+$app->post('/admin/users/create', function(){
+
+	User::verifyLogin();
+
+	$user = new User();
+
+	$_POST['inadmin'] = (isset($_POST['inadmin'])) ? 1 : 0;
+
+	$_POST['despassword'] = password_hash($_POST["despassword"], PASSWORD_DEFAULT, [
+		"cost"=>12
+	]);
+
+	$user->setData($_POST);
+
+	$user->save();
+
+	header('Location: /admin/users');
+	exit;
+
+});
+
+// editar um usuário no banco de dados
+$app->post('/admin/users/:iduser', function($iduser){
+
+	User::verifyLogin();
+	
+	$user = new User();
+
+	$_POST['inadmin'] = (isset($_POST['inadmin'])) ? 1 : 0;
+
+	$_POST['despassword'] = password_hash($_POST["despassword"], PASSWORD_DEFAULT, [
+		"cost"=>12
+	]);
+
+	$user->get((int)$iduser);
+
+	$user->setData($_POST);
+
+	$user->update();
+
+	header('Location: /admin/users');
+	exit;
+
+});
+
+// página de esqueci minha senha
+$app->get('/admin/forgot', function(){
+
+	$page = new PageAdmin([
+		"header"=>false,
+		"footer"=>false,
+		]);
+
+	$page->setTpl('forgot');
+
+});
+
+// redefinir senha 
+$app->post('/admin/forgot',function(){
+
+	$user = User::getForgot($_POST['email']);
+
+	header("Location: /admin/forgot/sent");
+	exit;
+
+});
+
+// página que mostra que o email foi enviado
+$app->get('/admin/forgot/sent',function(){
+
+	$page = new PageAdmin([
+		"header"=>false,
+		"footer"=>false,
+		]);
+
+	$page->setTpl('forgot-sent');
+
+});
+
+// página para resetar a senha
+$app->get('/admin/forgot/reset', function(){
+
+	$user = User::validForgotDecrypt($_GET["code"]);
+
+	$page = new PageAdmin([
+		"header"=>false,
+		"footer"=>false,
+		]);
+
+	$page->setTpl('forgot-reset', [
+		"name"=>$user["desperson"],
+		"code"=>$_GET["code"]
+	]);
+
+});
+
+// lógica para resetar a senha
+$app->post('/admin/forgot/reset', function(){
+
+	$forgot = User::validForgotDecrypt($_POST["code"]);
+
+	User::setForgotUsed($forgot["idrecovery"]);
+
+	$user = new User();
+
+	$user->get((int)$forgot["iduser"]);
+
+	$password = password_hash($_POST["password"], PASSWORD_DEFAULT, ["cost"=>12]);
+
+	$user->setPassword($password);
+
+	$page = new PageAdmin([
+		"header"=>false,
+		"footer"=>false,
+		]);
+
+	$page->setTpl('forgot-reset-success');
+
+});
+
+// lista das categorias
+$app->get('/admin/categories', function(){
+
+	User::verifyLogin();
+
+	$categories = Category::listAll();
+
+	$page = new PageAdmin();
+
+	$page->setTpl('categories',['categories'=>$categories]);
+
+});
+
+// página de cadastro de categorias
+$app->get('/admin/categories/create', function(){
+
+	User::verifyLogin();
+
+	$page = new PageAdmin();
+
+	$page->setTpl('categories-create');
+
+});
+
+// cadastra categoria
+$app->post('/admin/categories/create', function(){
+
+	User::verifyLogin();
+
+	$category = new Category();
+
+	$category->setData($_POST);
+
+	$category->save();
+
+	header('Location: /admin/categories');
+	exit;
+
+});
+
+// excluir categoria
+$app->get('/admin/categories/:idcategory/delete', function($idcategory){
+
+	User::verifyLogin();
+
+	$category = new Category();
+
+	$category->get((int)$idcategory);
+
+	$category->delete();
+
+	header('Location: /admin/categories');
+	exit;
+
+});
+
+// página para Editar categoria
+$app->get('/admin/categories/:idcategory', function($idcategory){
+
+	User::verifyLogin();
+
+	$category = new Category();
+
+	$category->get((int)$idcategory);
+
+	$page = new PageAdmin();
+
+	$page->setTpl('categories-update',[
+		"category"=>$category->getValues()
+	]);
+
+});
+
+// salvar edições na categoria
+$app->post('/admin/categories/:idcategory', function($idcategory){
+
+	User::verifyLogin();
+
+	$category = new Category();
+
+	$category->get((int)$idcategory);
+
+	$category->setData($_POST);
+
+	$category->save();
+
+	header('Location: /admin/categories');
+	exit;
+
+});
+
+// roda a aplicação
 $app->run();
 
  ?>
