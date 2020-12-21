@@ -1,6 +1,11 @@
+.env
 /vendor/composer
 /vendor/phpmailer
 /vendor/rain
 /vendor/slim
+/vendor/graham-campbell
+/vendor/phpoption
+/vendor/symfony
+/vendor/vlucas
 /vendor/autoload.php
 /views-cache/*.php

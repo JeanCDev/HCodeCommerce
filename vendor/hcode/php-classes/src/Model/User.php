@@ -9,8 +9,6 @@ class User extends Model{
 
   // nome da sessão
   const SESSION = "User";
-  const SECRET = "secret-code";
-  const SECRET_IV = "secret-code";
 
   // fazer login
   public static function login($login, $password){
@@ -183,8 +181,8 @@ class User extends Model{
 
         $code = openssl_encrypt(
           $dataRecovery['idrecovery'], 
-          'AES-128-CBC', pack("a16", User::SECRET), 0, 
-          pack("a16", User::SECRET_IV));
+          'AES-128-CBC', pack("a16", $_ENV["SECRET_KEY"]), 0, 
+          pack("a16", $_ENV["SECRET_IV_KEY"]));
 
         $code = base64_encode($code);
 
@@ -217,8 +215,8 @@ class User extends Model{
     $idrecovery = openssl_decrypt(
       base64_decode($code), 
       'AES-128-CBC', 
-      pack("a16", User::SECRET), 0, 
-      pack("a16", User::SECRET_IV));
+      pack("a16", $_ENV["SECRET_KEY"]), 0, 
+      pack("a16", $_ENV["SECRET_IV_KEY"]));
 
     $sql = new Sql();
 

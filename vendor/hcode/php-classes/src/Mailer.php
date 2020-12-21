@@ -6,10 +6,6 @@ use Rain\Tpl;
 
 class Mailer{
 
-  const USERNAME = "email";
-  const PASSWORD = "password";
-  const NAMEFROM = "Hcode Store";
-
   private $mail;
 
   public function __construct($toAddress, $toName, $subject, 
@@ -56,11 +52,11 @@ class Mailer{
       
       $this->mail->SMTPAuth = true;
       
-      $this->mail->Username = Mailer::USERNAME;
+      $this->mail->Username = $_ENV['STORE_USERNAME'];
       
-      $this->mail->Password = Mailer::PASSWORD;
+      $this->mail->Password = $_ENV['STORE_PASSWORD'];
       
-      $this->mail->setFrom(Mailer::USERNAME, Mailer::NAMEFROM);
+      $this->mail->setFrom($_ENV['STORE_USERNAME'], $_ENV['STORE_NAMEFROM']);
       
       $this->mail->addAddress($toAddress, $toName);
       
