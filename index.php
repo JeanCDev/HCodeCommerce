@@ -11,6 +11,7 @@ require_once("vendor/autoload.php");
 // usa as bibliotecas importadas
 use \Slim\Slim;
 
+// Inicia as variáveis ambiente
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
@@ -18,10 +19,22 @@ $dotenv->load();
 $app = new Slim();
 $app->config('debug', true);
 
+// funções úteis
+require_once("functions.php");
+
+// rotas do site para clientes
 require_once("site.php");
+
+// login e home do admin
 require_once("admin.php");
+
+// páginas de usuários do admin
 require_once("admin-users.php");
+
+// páginas para editar categorias do admin
 require_once("admin-categories.php");
+
+// página para editar Produtos do admin
 require_once("admin-products.php");
 
 // roda a aplicação

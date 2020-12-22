@@ -17,6 +17,21 @@ class Product extends Model{
 
   }
 
+  // Adiciona a informação em uma lista de itens para mostrar as imagens
+  public static function checkList($list){
+
+    foreach($list as &$row){
+
+      $product = new Product();
+      $product->setData($row);
+      $row = $product->getValues();
+
+    }
+
+    return $list;
+
+  }
+
   // salvar novo produto no banco de dados
   public function save(){
 
