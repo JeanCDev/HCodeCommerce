@@ -10,6 +10,56 @@ class User extends Model{
   // nome da sessão
   const SESSION = "User";
 
+  // pega os dados do usuário da informações na sessão
+  public static function getFromSessionId(){
+
+    $user = new User();
+
+    if(isset($_SESSION[User::SESSION]['iduser'])
+      && $_SESSION[User::SESSION]['iduser'] > 0){
+
+        $user->setData($_SESSION[User::SESSION]);
+
+    }
+
+    return $user;
+
+  }
+
+  // verifica se o usuário está logado
+  public function checkLogin($inAdmin = true){
+
+    if(
+      !isset($_SESSION[User::SESSION]) 
+      ||
+      !$_SESSION[User::SESSION]
+      ||
+      !(int)$_SESSION[User::SESSION]['iduser'] > 0
+    ){
+
+      return false;
+
+    } else {
+
+      if($inAdmin === true && 
+        (bool)$_SESSION[User::SESSION]['inadmin'] === true){
+
+          return true;
+
+      } else if($inAdmin === false){
+
+        return true;
+
+      } else {
+
+        return false;
+
+      }
+
+    }
+
+  }
+
   // fazer login
   public static function login($login, $password){
 
@@ -44,15 +94,7 @@ class User extends Model{
   // verifica as informações de login
   public static function verifyLogin($inAdmin = true){
 
-    if(
-      !isset($_SESSION[User::SESSION]) 
-      ||
-      !$_SESSION[User::SESSION]
-      ||
-      !(int)$_SESSION[User::SESSION]['iduser'] > 0
-      ||
-      (bool)$_SESSION[User::SESSION]['inadmin'] !== $inAdmin
-    ){
+    if(!User::checkLogin($inAdmin)){
       header("Location: /admin/login");
       exit;
     }
