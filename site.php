@@ -66,13 +66,83 @@ $app->get('/products/:desurl', function ($desurl){
 
 });
 
+// página do carrinho de compras
 $app->get('/cart', function(){
 
 	$cart = Cart::getFromSession();
 
 	$page = new Page();
 
-	$page->setTpl('cart');
+	$page->setTpl('cart', [
+		"cart"=>$cart->getValues(),
+		"products"=>$cart->getProducts(),
+		"error" => Cart::getMsgError()
+	]);
+
+});
+
+// adicionar produto no carrinho
+$app->get('/cart/:idproduct/add', function($idproduct){
+
+	$product = new Product();
+
+	$product->get((int)$idproduct);
+
+	$qtd = isset($_GET['qtd']) ? (int)$_GET['qtd'] : 1;
+	
+	$cart = Cart::getFromSession();
+
+	for($i = 0; $i < $qtd; $i++){
+
+		$cart->addProduct($product);
+
+	}
+
+	header("Location: /cart");
+	exit;
+
+});
+
+// tirar um produto do carrinho
+$app->get('/cart/:idproduct/minus', function($idproduct){
+
+	$product = new Product();
+
+	$product->get((int)$idproduct);
+
+	$cart = Cart::getFromSession();
+
+	$cart->removeProduct($product);
+
+	header("Location: /cart");
+	exit;
+
+});
+
+// remove todos os produtos de um tipo
+$app->get('/cart/:idproduct/remove', function($idproduct){
+
+	$product = new Product();
+
+	$product->get((int)$idproduct);
+
+	$cart = Cart::getFromSession();
+
+	$cart->removeProduct($product, true);
+
+	header("Location: /cart");
+	exit;
+
+});
+
+$app->get('/cart/freight', function (){
+
+	$cart = Cart::getFromSession();
+
+	$cart->setFreight($_GET['zipcode']);
+
+	header("Location: /cart");
+	exit;
 
 });
 
