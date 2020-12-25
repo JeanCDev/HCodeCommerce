@@ -10,6 +10,10 @@ class User extends Model{
   // nome da sessão
   const SESSION = "User";
 
+  // Constante de erros
+  const ERROR = "UserError";
+  const ERROR_REGISTER = "UserErrorRegister";
+
   // pega os dados do usuário da informações na sessão
   public static function getFromSessionId(){
 
@@ -37,6 +41,7 @@ class User extends Model{
       !(int)$_SESSION[User::SESSION]['iduser'] > 0
     ){
 
+      // não está logado
       return false;
 
     } else {
@@ -65,8 +70,10 @@ class User extends Model{
 
     $sql = new Sql();
 
-    $results = $sql->select('SELECT * FROM tb_users 
-      WHERE deslogin = :LOGIN',
+    $results = $sql->select('SELECT * FROM tb_users a
+      INNER JOIN tb_persons b
+      ON a.idperson = b.idperson
+      WHERE a.deslogin = :LOGIN',
     [':LOGIN'=>$login]);
 
     if(count($results) === 0){
@@ -79,6 +86,8 @@ class User extends Model{
 
       $user = new User();
 
+      $data['desperson'] = utf8_encode($data['desperson']);
+
       $user->setData($data);
 
       $_SESSION[User::SESSION] = $user->getValues();
@@ -86,7 +95,7 @@ class User extends Model{
       return $user;
 
     } else {
-      throw new \Exception("Usuário inexistente ou senha inválida", 1);
+      throw new \Exception("Usuário inexistente ou senha inválida");
     }
 
   }
@@ -95,8 +104,15 @@ class User extends Model{
   public static function verifyLogin($inAdmin = true){
 
     if(!User::checkLogin($inAdmin)){
-      header("Location: /admin/login");
-      exit;
+      
+      if($inAdmin){
+        header("Location: /admin/login");
+      } else {
+        header("Location: /login");
+      }
+
+      exit();
+      
     }
 
   }
@@ -126,9 +142,9 @@ class User extends Model{
     $result = $sql->select("CALL sp_users_save 
     (:desperson, :deslogin, :despassword, :desemail, :nrphone, :inadmin)", 
     [
-      ":desperson" => $this->getdesperson(),
+      ":desperson" => utf8_decode($this->getdesperson()),
       ":deslogin" => $this->getdeslogin(),
-      ":despassword" => $this->getdespassword(),
+      ":despassword" => User::getPasswordHash($this->getdespassword()),
       ":desemail" => $this->getdesemail(),
       ":nrphone" => $this->getnrphone(),
       ":inadmin" => $this->getinadmin(),
@@ -148,8 +164,12 @@ class User extends Model{
     USING(idperson) WHERE a.iduser = :iduser",[
       ":iduser" => $iduser
     ]);
+    
+    $data = $result[0];
 
-    $this->setData($result[0]);
+    $data['desperson'] = utf8_encode($data['desperson']);
+
+    $this->setData($data);
 
   }
 
@@ -162,9 +182,9 @@ class User extends Model{
       (:iduser, :desperson, :deslogin, 
       :despassword, :desemail, :nrphone, :inadmin);", [
       ":iduser" => $this->getiduser(),
-      ":desperson" => $this->getdesperson(),
+      ":desperson" => utf8_decode($this->getdesperson()),
       ":deslogin" => $this->getdeslogin(),
-      ":despassword" => $this->getdespassword(),
+      ":despassword" => User::getPasswordHash($this->getdespassword()),
       ":desemail" => $this->getdesemail(),
       ":nrphone" => $this->getnrphone(),
       ":inadmin" => $this->getinadmin(),
@@ -186,7 +206,7 @@ class User extends Model{
   }
 
   // recupera a senha caso o usuário esqueça
-  public static function getForgot($email) {
+  public static function getForgot($email, $inAdmin = true) {
 
     $sql = new Sql();
 
@@ -228,7 +248,11 @@ class User extends Model{
 
         $code = base64_encode($code);
 
-        $link = "http://www.hcodecommerce.com.br/admin/forgot/reset?code=$code";
+        if($inAdmin == true){
+          $link = "http://www.hcodecommerce.com.br/admin/forgot/reset?code=$code";
+        } else {
+          $link = "http://www.hcodecommerce.com.br/forgot/reset?code=$code";
+        }
 
         $mailer = new Mailer(
           $data['desemail'], 
@@ -305,6 +329,80 @@ class User extends Model{
     $sql->query("UPDATE tb_users SET despassword = :password
       WHERE iduser = :iduser
     ",[":password"=>$password, ":iduser"=>$this->getiduser()]);
+
+  }
+
+  // salva os erros na sessão
+  public static function setError($msg){
+
+    $_SESSION[User::ERROR] = $msg;
+
+  }
+
+  // pega os erros da sessão
+  public static function getError(){
+
+    $msg = (isset($_SESSION[User::ERROR]) && $_SESSION[User::ERROR]) ? $_SESSION[User::ERROR] : '';
+
+    User::clearErrors();
+
+    return $msg;
+
+  }
+
+  // limpa os erros da sessão
+  public static function clearErrors(){
+
+    $_SESSION[User::ERROR] = NULL;
+
+  }
+
+  // salva o erro no registro de erros
+  public static function setErrorRegister($msg){
+
+    $_SESSION[User::ERROR_REGISTER] = $msg;
+
+  }
+
+  // recupera os erros no registro de erros
+  public static function getErrorRegister(){
+
+    $msg = (isset($_SESSION[User::ERROR_REGISTER]) && $_SESSION[User::ERROR_REGISTER] ? $_SESSION[User::ERROR_REGISTER] : '');
+
+    User::clearErrorRegister();
+
+    return $msg;
+
+  }
+
+  // limpa o registro de erros
+  public static function clearErrorRegister(){
+
+    $_SESSION[User::ERROR_REGISTER] = NULL;
+
+  }
+
+  // criptografa a senha
+  public static function getPasswordHash($password){
+
+    return password_hash($password, PASSWORD_DEFAULT, [
+      'cost'=>12
+    ]);
+
+  }
+
+  // verifica se o login já existe no banco  de dados
+  public static function checkLoginExists($login){
+
+    $sql = new Sql();
+
+    $results = $sql->select("
+      SELECT deslogin FROM tb_users WHERE deslogin = :deslogin
+    ", [
+      ":deslogin" => $login
+    ]);
+
+    return (count($results) > 0);
 
   }
 
