@@ -13,6 +13,7 @@ class User extends Model{
   // Constante de erros
   const ERROR = "UserError";
   const ERROR_REGISTER = "UserErrorRegister";
+  const SUCCESS = "UserRegisterSuccess";
 
   // pega os dados do usuário da informações na sessão
   public static function getFromSessionId(){
@@ -184,7 +185,7 @@ class User extends Model{
       ":iduser" => $this->getiduser(),
       ":desperson" => utf8_decode($this->getdesperson()),
       ":deslogin" => $this->getdeslogin(),
-      ":despassword" => User::getPasswordHash($this->getdespassword()),
+      ":despassword" =>$this->getdespassword(),
       ":desemail" => $this->getdesemail(),
       ":nrphone" => $this->getnrphone(),
       ":inadmin" => $this->getinadmin(),
@@ -328,7 +329,9 @@ class User extends Model{
 
     $sql->query("UPDATE tb_users SET despassword = :password
       WHERE iduser = :iduser
-    ",[":password"=>$password, ":iduser"=>$this->getiduser()]);
+    ",[
+      ":password"=>$password, ":iduser"=>$this->getiduser()]
+    );
 
   }
 
@@ -403,6 +406,31 @@ class User extends Model{
     ]);
 
     return (count($results) > 0);
+
+  }
+
+  // salva mensagem de sucesso para o usuário
+  public static function setSuccess($msg){
+
+    $_SESSION[User::SUCCESS] = $msg;
+
+  }
+
+  // pega mensagens de sucesso do usuário
+  public static function getSuccess(){
+
+    $msg = (isset($_SESSION[User::SUCCESS]) && $_SESSION[User::SUCCESS]) ? $_SESSION[User::SUCCESS] : '';
+
+    User::clearSuccess();
+
+    return $msg;
+
+  }
+
+  // limpa as mensagens de sucesso do usuário
+  public static function clearSuccess(){
+
+    $_SESSION[User::SUCCESS] = NULL;
 
   }
 

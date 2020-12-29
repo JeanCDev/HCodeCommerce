@@ -303,7 +303,7 @@ class Cart extends Model{
 
   }
 
-  // salva o erro de cálculo de frente em uma sessão
+  // salva o erro de cálculo de frete em uma sessão
   public static function setMsgError($msg){
 
     $_SESSION[Cart::SESSION_ERROR] = $msg;
