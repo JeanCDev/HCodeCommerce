@@ -287,10 +287,6 @@ class Cart extends Model{
 
       return $result;
 
-    } else {
-
-
-
     }
 
   }
@@ -337,6 +333,7 @@ class Cart extends Model{
 
   }
 
+  // calcula o valor total dos produtos e soma com o frete
   public function getCalculateTotal(){
 
     $this->updateFreight();

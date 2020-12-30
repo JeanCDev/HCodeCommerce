@@ -1,6 +1,7 @@
 <?php
 
   use Hcode\Model\User;
+  use Hcode\Model\Cart;
 
   // formata os preços de float para o padrão moeda
   function formatPrice($price){
@@ -27,6 +28,33 @@
 
   }
 
+  // pega a quantidade de produtos no carrinho
+  function getCartNrQtd(){
 
+    $cart = Cart::getFromSession();
+
+    $totals = $cart->getProductsTotal();
+
+    return $totals['nrqtd'];
+
+  }
+
+  // pega o valor total do carrinho
+  function getCartVlSubtotal(){
+
+    $cart = Cart::getFromSession();
+
+    $totals = $cart->getProductsTotal();
+
+    return formatPrice($totals['vlprice']);
+
+  }
+
+  // formata a data
+  function formatDate($date){
+
+    return date('d/m/Y', strtotime($date));
+
+  }
 
 ?> 

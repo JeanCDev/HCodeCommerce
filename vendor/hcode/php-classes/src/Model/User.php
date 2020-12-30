@@ -330,7 +330,7 @@ class User extends Model{
     $sql->query("UPDATE tb_users SET despassword = :password
       WHERE iduser = :iduser
     ",[
-      ":password"=>$password, ":iduser"=>$this->getiduser()]
+      ":password"=>User::getPasswordHash($password), ":iduser"=>$this->getiduser()]
     );
 
   }
@@ -431,6 +431,28 @@ class User extends Model{
   public static function clearSuccess(){
 
     $_SESSION[User::SUCCESS] = NULL;
+
+  }
+
+  // pega todas as ordens de um determinado usuário
+  public function getOrders(){
+
+    $sql = new Sql();
+
+      $result = $sql->select("
+      SELECT * 
+			FROM tb_orders a 
+        INNER JOIN tb_ordersstatus b USING(idstatus) 
+        INNER JOIN tb_carts c USING(idcart)
+        INNER JOIN tb_users d ON d.iduser = a.iduser
+        INNER JOIN tb_addresses e USING(idaddress)
+        INNER JOIN tb_persons f ON f.idperson = d.idperson
+			WHERE a.iduser = :iduser
+      ", [
+        ":iduser"=>$this->getiduser()
+      ]);
+
+      return $result;
 
   }
 

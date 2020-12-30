@@ -37,6 +37,9 @@ require_once("Routes/admin-categories.php");
 // página para editar Produtos do admin
 require_once("Routes/admin-products.php");
 
+// página para visualizar os pedidos
+require_once("Routes/admin-orders.php");
+
 // roda a aplicação
 $app->run();
 
