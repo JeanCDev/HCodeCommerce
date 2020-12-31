@@ -80,7 +80,7 @@ $app->get('/cart', function(){
 	$page->setTpl('cart', [
 		"cart"=>$cart->getValues(),
 		"products"=>$cart->getProducts(),
-		"error" => Cart::getMsgError()
+		"error" => Cart::getMsgError(),
 	]);
 
 });
@@ -275,6 +275,7 @@ $app->post('/checkout', function(){
 	]);
 
 	$order->save();
+	$cart->removeFromSession();
 
 	header("Location: /order/".$order->getidorder());
 	exit();
@@ -437,9 +438,7 @@ $app->post('/forgot/reset', function(){
 
 	$user->get((int)$forgot["iduser"]);
 
-	$password = password_hash($_POST["password"], PASSWORD_DEFAULT, ["cost"=>12]);
-
-	$user->setPassword($password);
+	$user->setPassword($_POST['password']);
 
 	$page = new Page();
 

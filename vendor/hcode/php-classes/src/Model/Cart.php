@@ -59,6 +59,14 @@ class Cart extends Model{
 
   }
 
+  // remove o carrinho da sessão
+  public function removeFromSession(){
+
+    $_SESSION[Cart::SESSION] = null;
+    session_regenerate_id();
+
+  }
+
   // paga o carrinho do banco de dados pelo id
   public function get($idcart){
 

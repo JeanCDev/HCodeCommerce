@@ -5,7 +5,7 @@ use \Hcode\Model\User;
 use \Hcode\Model\Order;
 use \Hcode\Model\OrderStatus;
 
-// muda o status do pedido
+// rota para mudar o status do pedido
 $app->get('/admin/orders/:idorder/status', function($idorder){
 
   User::verifyLogin();
@@ -25,6 +25,7 @@ $app->get('/admin/orders/:idorder/status', function($idorder){
 
 });
 
+// muda o status do pedido
 $app->post('/admin/orders/:idorder/status', function ($idorder){
 
   User::verifyLogin();
@@ -95,10 +96,39 @@ $app->get('/admin/orders', function(){
 
   User::verifyLogin();
 
+  $search = (isset($_GET['search'])) ? $_GET['search'] : '';
+	$page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
+	
+	if($search !== ''){
+
+		$pagination = Order::getPageSearch($search, $page);
+
+	} else {
+
+		$pagination = Order::getPage($page);
+
+	}
+
+	$pages = [];
+
+	for($i = 0; $i < $pagination['pages']; $i++) {
+
+		array_push($pages, [
+			'href' => '/admin/orders?' . http_build_query([
+				"page" => $i+1,
+				"search" => $search
+			]),
+			'text' => $i+1
+    ]);
+
+  }
+
   $page = new PageAdmin();
 
   $page->setTpl('orders', [
-    "orders"=>Order::listAll()
+    'orders' => $pagination['data'],
+    'search' => $search,
+    'pages' => $pages
   ]);
 
 });

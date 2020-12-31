@@ -24,7 +24,7 @@
 
     $user = User::getFromSessionId();
 
-    return $user->getdesperson();
+    return utf8_decode($user->getdesperson());
 
   }
 

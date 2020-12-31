@@ -125,6 +125,64 @@ class User extends Model{
 
   }
 
+  // pega os usuários com paginação
+  public static function getPage($page = 1, $itemsPerPage = 5) {
+
+    $start = ($page - 1)*$itemsPerPage;
+
+    $sql = new Sql();
+
+    $results = $sql->select(
+      "SELECT SQL_CALC_FOUND_ROWS * 
+      FROM tb_users a 
+      INNER JOIN tb_persons b 
+      USING (idperson) ORDER BY b.desperson
+      LIMIT $start, $itemsPerPage");
+
+    $resultTotal = $sql->select("
+        SELECT FOUND_ROWS() AS nrtotal
+      ");
+
+    return [
+      "data"=>$results,
+      "total"=>$resultTotal[0]['nrtotal'],
+      "pages"=>ceil($resultTotal[0]['nrtotal'] / $itemsPerPage)
+    ];
+
+  }
+
+  // pega os usuários da pesquisa dá página users
+  public static function getPageSearch($search, $page = 1, $itemsPerPage = 5) {
+
+    $start = ($page - 1)*$itemsPerPage;
+
+    $sql = new Sql();
+
+    $results = $sql->select(
+      "SELECT SQL_CALC_FOUND_ROWS * 
+      FROM tb_users a 
+      INNER JOIN tb_persons b 
+      USING (idperson)
+      WHERE b.desperson LIKE :search 
+        OR a.deslogin LIKE :search
+        OR b.desemail = :search
+      ORDER BY b.desperson
+      LIMIT $start, $itemsPerPage",[
+        ':search' =>"%".$search."%"
+      ]);
+
+    $resultTotal = $sql->select("
+        SELECT FOUND_ROWS() AS nrtotal
+      ");
+
+    return [
+      "data"=>$results,
+      "total"=>$resultTotal[0]['nrtotal'],
+      "pages"=>ceil($resultTotal[0]['nrtotal'] / $itemsPerPage)
+    ];
+
+  }
+
   // lista todos os usuários
   public static function listAll(){
 
@@ -185,7 +243,7 @@ class User extends Model{
       ":iduser" => $this->getiduser(),
       ":desperson" => utf8_decode($this->getdesperson()),
       ":deslogin" => $this->getdeslogin(),
-      ":despassword" =>$this->getdespassword(),
+      ":despassword" =>User::getPasswordHash($this->getdespassword()),
       ":desemail" => $this->getdesemail(),
       ":nrphone" => $this->getnrphone(),
       ":inadmin" => $this->getinadmin(),
