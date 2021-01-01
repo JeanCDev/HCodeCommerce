@@ -178,6 +178,7 @@ $app->get('/checkout', function(){
 	}	
 
 	if(!$address->getdesaddress()) $address->setdesaddress('');
+	if(!$address->getdesnumber()) $address->setdesnumber('');
 	if(!$address->getdescomplement()) $address->setdescomplement('');
 	if(!$address->getdesdistrict()) $address->setdesdistrict('');
 	if(!$address->getdescity()) $address->setdescity('');
@@ -253,7 +254,7 @@ $app->post('/checkout', function(){
 
 	$address = new Address();
 
-	$_POST['deszipcode'] = $_POST['zipcode'];
+	$_POST['deszipcode'] = str_replace('-', '', $_POST['zipcode']);
 	$_POST['idperson'] = $user->getidperson();
 
 	$address->setData($_POST);
@@ -275,10 +276,78 @@ $app->post('/checkout', function(){
 	]);
 
 	$order->save();
-	$cart->removeFromSession();
+	//$cart->removeFromSession();
 
-	header("Location: /order/".$order->getidorder());
+	
+	switch((int)$_POST['payment-method']){
+		
+		case 1:
+			header("Location: /order/".$order->getidorder()); // padrão
+			break;
+		
+		case 2:
+			header("Location: /order/".$order->getidorder().'/pagseguro'); // pagseguro
+			break;
+		
+			case 3:
+				header("Location: /order/".$order->getidorder().'/paypal'); // paypal
+				break;
+
+	}
+
 	exit();
+
+});
+
+// rota para integrar com pagseguro
+$app->get('/order/:idorder/pagseguro', function($idorder){
+
+	User::verifyLogin(false);
+
+	$order = new Order();
+
+	$order->get((int)$idorder);
+
+	$cart = $order->getCart();
+
+	$page = new Page([
+		'header' => false,
+		'footer' => false,
+	]);
+
+	$page->setTpl('payment-pagseguro', [
+		"order"=>$order->getValues(),
+		"cart"=> $cart->getValues(),
+		"products"=>$cart->getProducts(),
+		"phone"=>[
+			"areaCode"=>substr($order->getnrphone(), 0, 2),
+			"number" => substr($order->getnrphone(), 2, strlen($order->getnrphone()))
+		]
+	]);
+
+});
+
+// rota para integrar com pagseguro
+$app->get('/order/:idorder/paypal', function($idorder){
+
+	User::verifyLogin(false);
+
+	$order = new Order();
+
+	$order->get((int)$idorder);
+
+	$cart = $order->getCart();
+
+	$page = new Page([
+		'header' => false,
+		'footer' => false,
+	]);
+
+	$page->setTpl('payment-paypal', [
+		"order"=>$order->getValues(),
+		"cart"=> $cart->getValues(),
+		"products"=>$cart->getProducts()
+	]);
 
 });
 
