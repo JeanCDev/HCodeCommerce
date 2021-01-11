@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => '0fdb4bf6e09bcf312be98e7f95ebcb323011feb7',
+    'reference' => '3f653b1aacf0875756a1d3fbd40f69ccc0642e95',
     'name' => 'jeancdev/ecommerce',
   ),
   'versions' => 
@@ -27,7 +27,7 @@
       'aliases' => 
       array (
       ),
-      'reference' => '0fdb4bf6e09bcf312be98e7f95ebcb323011feb7',
+      'reference' => '3f653b1aacf0875756a1d3fbd40f69ccc0642e95',
     ),
     'phpmailer/phpmailer' => 
     array (

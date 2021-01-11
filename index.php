@@ -23,22 +23,22 @@ $app->config('debug', true);
 require_once("functions.php");
 
 // rotas do site para clientes
-require_once("Routes/site.php");
+require_once("routes/site.php");
 
 // login e home do admin
-require_once("Routes/admin.php");
+require_once("routes/admin.php");
 
 // páginas de usuários do admin
-require_once("Routes/admin-users.php");
+require_once("routes/admin-users.php");
 
 // páginas para editar categorias do admin
-require_once("Routes/admin-categories.php");
+require_once("routes/admin-categories.php");
 
 // página para editar Produtos do admin
-require_once("Routes/admin-products.php");
+require_once("routes/admin-products.php");
 
 // página para visualizar os pedidos
-require_once("Routes/admin-orders.php");
+require_once("routes/admin-orders.php");
 
 // roda a aplicação
 $app->run();

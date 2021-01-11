@@ -19,10 +19,6 @@ class ComposerStaticInit20572ad37de1162f82b73da0024fa663
             'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Polyfill\\Ctype\\' => 23,
         ),
-        'R' => 
-        array (
-            'Routes\\' => 7,
-        ),
         'P' => 
         array (
             'PhpOption\\' => 10,
@@ -53,10 +49,6 @@ class ComposerStaticInit20572ad37de1162f82b73da0024fa663
         'Symfony\\Polyfill\\Ctype\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
-        ),
-        'Routes\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/Routes',
         ),
         'PhpOption\\' => 
         array (
